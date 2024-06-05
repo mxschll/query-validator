@@ -2,8 +2,7 @@
 
 This project aims to provide an easy way to automatically validate the output of SQL queries.
 
-
-## Example Test
+## Test Definition
 
 ```yaml filename="test-select-users.yaml"
 query: |
@@ -38,3 +37,19 @@ assertions:
       operator: ">"
       value: 1000
 ```
+
+### Keys Explanation
+
+| Key          | Description                                               | Values                                          |
+| ------------ | --------------------------------------------------------- | ----------------------------------------------- |
+| `query`      | The SQL query to be executed.                             | A valid SQL query string.                       |
+| `assertions` | A collection of assertions to validate the query results. | A dictionary containing assertions (see below). |
+
+### `assertions`
+
+| Key                     | Description                                                  | Values                                                       |
+| ----------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `assertions.count`      | The expected number of rows in the result set.               | An integer representing the expected row count.              |
+| `assertions.has`        | Assertions to check for the presence of specific values in the result set. | A list of dictionaries, each containing: `column` and `values`. |
+| `assertions.missing`    | Assertions to check for the absence of specific values in the result set. | A list of dictionaries, each containing: `column`, `values`, and optional `regex`. |
+| `assertions.conditions` | Assertions to check for specific conditions on the result set. | A list of dictionaries, each containing: `column`, `operator`, and `value`. |
