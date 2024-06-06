@@ -6,7 +6,7 @@ This project aims to provide an easy way to automatically validate the output of
 
 ```yaml filename="test-select-users.yaml"
 query: |
-  SELECT id, username, email, created_at
+  SELECT id, username, email, created_at, deleted_at
   FROM users
   WHERE created_at > :date_today
 assertions:
@@ -36,6 +36,10 @@ assertions:
     - column: "id"
       operator: ">"
       value: 1000
+  no_nulls:
+    - column: "email"
+  only_nulls:
+    - column: "deleted_at"
 ```
 
 ### Keys Explanation
@@ -53,3 +57,5 @@ assertions:
 | `assertions.has`        | Assertions to check for the presence of specific values in the result set. | A list of dictionaries, each containing: `column` and `values`. |
 | `assertions.missing`    | Assertions to check for the absence of specific values in the result set. | A list of dictionaries, each containing: `column`, `values`, and optional `regex`. |
 | `assertions.conditions` | Assertions to check for specific conditions on the result set. | A list of dictionaries, each containing: `column`, `operator`, and `value`. |
+| `assertions.no_nulls` | Assertions to check that there are no null values in the specified columns. |  |
+| `assertions.only_nulls` | Assertions to that there are only null values in the specified columns. |  |
