@@ -11,7 +11,7 @@ query: |
   WHERE created_at > :date_today
 assertions:
   count: 5  # Expecting 5 rows in the result
-  has:
+  has: # Value must exist (at least once) in specified column.
     - column: "email"
       values: 
         - "bob@example.com"
@@ -20,7 +20,7 @@ assertions:
       values: 
         - "alice"
         - "bob"
-  missing:
+  missing: # Value must not exist in specified column.
     - column: "email"
       values: 
         - "sally@example.com"
@@ -36,10 +36,8 @@ assertions:
     - column: "id"
       operator: ">"
       value: 1000
-  no_nulls:
-    - column: "email"
-  only_nulls:
-    - column: "deleted_at"
+  no_nulls: ["email"]
+  only_nulls: ["deleted_at"]
 ```
 
 ### Keys Explanation
