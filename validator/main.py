@@ -40,9 +40,10 @@ def run_assertions(rows, assertions):
 
 def main():
     """Main function to execute the tests and log the results."""
-    test_files = loader.load_test_files()
 
     cfg = config.settings
+
+    test_files = loader.load_test_files(cfg['TEST_FILES'])
     engine = database.create_db_engine(cfg['DB_URI'])
     logger.setup_logging(cfg)
 

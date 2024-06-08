@@ -11,7 +11,10 @@ settings = ConfigStore({
         name='DB_URI',
         is_required=True
     ),
-
+    'TEST_FILES': EnvironmentVariable(
+        name='TEST_FILES',
+        is_required=True
+    ),
     'LOG_LEVEL': EnvironmentVariable(
         name='LOG_LEVEL',
         default_val='INFO',
