@@ -2,6 +2,17 @@
 
 This project aims to provide an easy way to automatically validate the output of SQL queries.
 
+## Usage
+
+```bash
+docker run \
+  -e DB_URI="postgresql://username:password@dbhost:5432/dbname" \
+  -e CRON_SCHEDULE="* * * * *" --network=db-network \
+  -v ./queries:/app/queries \
+  query-validator
+```
+
+
 ## Test Definition
 
 ```yaml filename="test-select-users.yaml"
@@ -11,7 +22,7 @@ query: |
   WHERE created_at > :date_today
 assertions:
   count: 5  # Expecting 5 rows in the result
-  has: # Value must exist (at least once) in specified column.
+  has: # Value must exist (at least once) in specified column
     - column: "email"
       values: 
         - "bob@example.com"
