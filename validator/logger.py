@@ -3,16 +3,16 @@ import logging
 
 def setup_logging():
     """Set up logging configuration."""
-    file_handler = logging.FileHandler('logs/test_results.log')
+    # file_handler = logging.FileHandler('logs/test_results.log')
     console_handler = logging.StreamHandler()
 
     console_handler.setFormatter(logging.Formatter(
         '%(asctime)s - %(levelname)s - %(message)s'))
-    file_handler.setFormatter(logging.Formatter(
-        '%(asctime)s - %(levelname)s - %(message)s'))
+    # file_handler.setFormatter(logging.Formatter(
+    #    '%(asctime)s - %(levelname)s - %(message)s'))
 
     logging.basicConfig(
-        handlers=[file_handler, console_handler],
+        handlers=[console_handler],
         level=logging.INFO
     )
 
@@ -24,8 +24,10 @@ def log_test_result(test_name, result, duration, error=None):
                      f"Result: {result}, "
                      f"Duration: {duration: .2f} seconds")
     else:
-        logging.error(f"Test: {test_name}, Result: {result}, Duration: {
-                      duration:.2f} seconds, Error: {error}")
+        logging.error(f"Test: {test_name}, "
+                      f"Result: {result}, "
+                      f"Duration: {duration:.2f} seconds, "
+                      f"Error: {error}")
 
 
 def log_summary(summary):
