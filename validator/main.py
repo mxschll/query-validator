@@ -1,9 +1,8 @@
 import time
 import config
 import logger
-import logging
-import database
 import loader
+import database
 import validators
 
 
@@ -41,16 +40,11 @@ def run_assertions(rows, assertions):
 
 def main():
     """Main function to execute the tests and log the results."""
-    logger.setup_logging()
     test_files = loader.load_test_files()
 
-    try:
-        cfg = config.load_config()
-    except ValueError as e:
-        logging.error(f"Config Error: {e}")
-        exit(1)
-
+    cfg = config.settings
     engine = database.create_db_engine(cfg['DB_URI'])
+    logger.setup_logging(cfg)
 
     summary = {
         'total': 0,
