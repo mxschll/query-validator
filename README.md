@@ -79,3 +79,61 @@ Retrieve container logs:
 docker logs -f my-query-validator
 ```
 
+#### Docker Compose
+
+```yaml
+services:
+  db:
+    image: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: username 
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+
+  validator:
+    image: query-validator
+    restart: unless-stopped
+    environment:
+      DB_URL: "postgresql://username:password@db:5432/mydatabase"
+      LOKI_HOST: 'http://loki:3100/loki/api/v1/push' # Send logs to Loki
+      CRON_SCHEDULE: "*/5 * * * *"
+    volumes:
+      - ./queries:/app/queries
+
+  loki:
+    image: grafana/loki:2.9.2
+    ports:
+      - "3100:3100"
+
+  grafana:
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+        - name: Loki
+          type: loki
+          access: proxy 
+          orgId: 1
+          url: http://loki:3100
+          basicAuth: false
+          isDefault: true
+          version: 1
+          editable: false
+        EOF
+        /run.sh
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+```
+
