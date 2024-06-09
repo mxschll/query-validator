@@ -1,28 +1,20 @@
 # Query Validator
 
-This project aims to provide an easy way to automatically validate the output of SQL queries.
-
-## Usage
-
-```bash
-docker run \
-  -e DB_URI="postgresql://username:password@dbhost:5432/dbname" \
-  -e CRON_SCHEDULE="* * * * *" --network=db-network \
-  -v ./queries:/app/queries \
-  query-validator
-```
-
+This project provides an easy way to automatically validate the output of SQL queries.
 
 ## Test Definition
 
+Tests for SQL query result sets are defined in YAML files. You can write multiple assertions for one query, but it's advisable to split assertions into several test files. Currently, one failing assertion stops the entire test.
+
+The format is as follows:
+
 ```yaml filename="test-select-users.yaml"
-query: |
+query: | # The query to be executed. Assertions are run on the result set.
   SELECT id, username, email, created_at, deleted_at
   FROM users
-  WHERE created_at > :date_today
 assertions:
-  count: 5  # Expecting 5 rows in the result
-  has: # Value must exist (at least once) in specified column
+  count: 5  # Expecting 5 rows in the result.
+  has: # Values must exist (at least once) in specified column.
     - column: "email"
       values: 
         - "bob@example.com"
@@ -31,40 +23,63 @@ assertions:
       values: 
         - "alice"
         - "bob"
-  missing: # Value must not exist in specified column.
+  missing: # Values must not exist in specified column.
     - column: "email"
       values: 
         - "sally@example.com"
     - column: "username"
       values:
         - "sally"
-      regex:
-        - "^admin.*"  # No usernames starting with 'admin'
-  conditions:
-    - column: "created_at"
-      operator: ">"
-      value: ":current_date"
-    - column: "id"
-      operator: ">"
-      value: 1000
-  no_nulls: ["email"]
-  only_nulls: ["deleted_at"]
+  no_nulls: ["email"] # Columns must not have null values.
+  only_nulls: ["deleted_at"] # Columns must only have null values.
 ```
 
-### Keys Explanation
 
-| Key          | Description                                               | Values                                          |
-| :----------- | :-------------------------------------------------------- | :---------------------------------------------- |
-| `query`      | The SQL query to be executed.                             | A valid SQL query string.                       |
-| `assertions` | A collection of assertions to validate the query results. | A dictionary containing assertions (see below). |
 
-### `assertions`
+## Configuration
 
-| Key                     | Description                                                  | Values                                                       |
-| :---------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
-| `assertions.count`      | The expected number of rows in the result set.               | An integer representing the expected row count.              |
-| `assertions.has`        | Assertions to check for the presence of specific values in the result set. | A list of dictionaries, each containing: `column` and `values`. |
-| `assertions.missing`    | Assertions to check for the absence of specific values in the result set. | A list of dictionaries, each containing: `column`, `values`, and optional `regex`. |
-| `assertions.conditions` | Assertions to check for specific conditions on the result set. | A list of dictionaries, each containing: `column`, `operator`, and `value`. |
-| `assertions.no_nulls` | Assertions to check that there are no null values in the specified columns. |  |
-| `assertions.only_nulls` | Assertions to that there are only null values in the specified columns. |  |
+- `DB_URI`
+- `TEST_FILES` 
+- `LOG_LEVEL`
+- `LOG_TO_CONSOLE`
+- `LOG_FILE_PATH`
+- `LOKI_HOST`
+- `LOKI_USERNAME`
+- `LOKI_PASSWORD`
+- `LOKI_TAGS`
+
+
+
+## Docker
+
+### How to use this image
+
+#### Starting using minimal configuration
+
+Mount the directory with your test files into the container at `/app/queries`. Specify the `DB_UR` pointing to the host and database, and set `CRON_SCHEDUL` for periodic test runs.
+
+```bash
+docker run --detach --name my-query-validator \
+	--volume "$(pwd)/queries:/app/queries" \
+	--env "DB_URL=postgresql://username:password@dbhost:5432/dbname" \
+	--env "CRON_SCHEDULE=*/5 * * * *" \
+	query-validator:latest
+```
+
+To attach the container to an existing Docker network:
+
+```bash
+docker run --detach --name my-query-validator \
+	--volume "$(pwd)/queries:/app/queries" \
+	--env "DB_URL=postgresql://username:password@dbhost:5432/dbname" \
+	--env "CRON_SCHEDULE=*/5 * * * *" \
+	--network database-network-name 
+	query-validator:latest
+```
+
+Retrieve container logs:
+
+```bash
+docker logs -f my-query-validator
+```
+
