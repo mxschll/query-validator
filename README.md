@@ -34,8 +34,6 @@ assertions:
   only_nulls: ["deleted_at"] # Columns must only have null values.
 ```
 
-
-
 ## Configuration
 
 - `DB_URI`
@@ -48,15 +46,13 @@ assertions:
 - `LOKI_PASSWORD`
 - `LOKI_TAGS`
 
-
-
 ## Docker
 
 ### How to use this image
 
 #### Starting using minimal configuration
 
-Mount the directory with your test files into the container at `/app/queries`. Specify the `DB_UR` pointing to the host and database, and set `CRON_SCHEDUL` for periodic test runs.
+Mount the directory with your test files into the container at `/app/queries`. Specify the `DB_URL` pointing to the host and database, and set `CRON_SCHEDULE` for periodic test runs.
 
 ```bash
 docker run --detach --name my-query-validator \
