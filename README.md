@@ -36,15 +36,15 @@ assertions:
 
 ## Configuration
 
-- `DB_URI`
-- `TEST_FILES` 
-- `LOG_LEVEL`
-- `LOG_TO_CONSOLE`
-- `LOG_FILE_PATH`
-- `LOKI_HOST`
-- `LOKI_USERNAME`
-- `LOKI_PASSWORD`
-- `LOKI_TAGS`
+The program can be configured via a `.env` file or by passing environment variables to the Docker container (see section [Docker](#Docker)).
+
+- `DB_URI` (required): The database connection URI.
+- `TEST_FILES` (required): Path to the test files. When running via Docker, this path is reflected inside the container. When running the Python script outside Docker, the path is relative to the location where the script is run, or you can specify an absolute path.
+- `LOG_FILE_PATH` (optional): Path to the log file. When omitted, no log file is written.
+- `LOKI_HOST` (optional): The Loki host for logging.
+- `LOKI_USERNAME` (optional): The Loki username.
+- `LOKI_PASSWORD` (optional): The Loki password.
+- `LOKI_TAGS` (optional): Tags for Loki logging.
 
 ## Docker
 
