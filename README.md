@@ -34,6 +34,8 @@ assertions:
   only_nulls: ["deleted_at"] # Columns must only have null values.
 ```
 
+Tests are executed in multiple threads in parallel. Keep this in mind when defining tests to avoid potential conflicts.
+
 ## Configuration
 
 The program can be configured via a `.env` file or by passing environment variables to the Docker container (see section [Docker](#Docker)).
