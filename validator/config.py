@@ -7,13 +7,14 @@ load_dotenv()
 
 # Define the configuration schema using evarify
 settings = ConfigStore({
-    'DB_URI': EnvironmentVariable(
-        name='DB_URI',
+    'DB_URL': EnvironmentVariable(
+        name='DB_URL',
         is_required=True
     ),
     'TEST_FILES': EnvironmentVariable(
         name='TEST_FILES',
-        is_required=True
+        default_val='../queries',
+        is_required=False
     ),
     'LOG_LEVEL': EnvironmentVariable(
         name='LOG_LEVEL',
@@ -26,18 +27,10 @@ settings = ConfigStore({
         default_val=True,
         is_required=False
     ),
-    'LOG_TO_FILE': EnvironmentVariable(
-        name='LOG_TO_FILE',
-        filters=[validate_is_boolean_true],
-        default_val=False,
-        is_required=False
-    ),
     'LOG_FILE_PATH': EnvironmentVariable(
         name='LOG_FILE_PATH',
-        default_val='logs/test_results.log',
         is_required=False
     ),
-
     # Loki config vars
     'LOKI_HOST': EnvironmentVariable(
         name='LOKI_HOST',

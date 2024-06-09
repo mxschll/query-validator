@@ -18,7 +18,7 @@ def setup_logging(config):
         handlers.append(console_handler)
 
     # File handler
-    if config['LOG_TO_FILE']:
+    if config['LOG_FILE_PATH']:
         file_handler = logging.FileHandler(config['LOG_FILE_PATH'])
         file_handler.setLevel(getattr(logging, config['LOG_LEVEL']))
         file_formatter = logging.Formatter(
@@ -59,6 +59,7 @@ def log_summary(summary):
     """Log a summary of all test results."""
     logging.info(f"SUMMARY - "
                  f"Tests: {summary['total']}, "
+                 f"Runtime: {summary['runtime']: .2f}s, "
                  f"Passed: {summary['passed']}, "
                  f"Failed: {summary['failed']}, "
                  f"Errors: {summary['errors']}")

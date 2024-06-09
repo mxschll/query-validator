@@ -4,6 +4,7 @@ import logger
 import loader
 import database
 import validators
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 def run_assertions(rows, assertions):
@@ -38,13 +39,47 @@ def run_assertions(rows, assertions):
             raise ValueError(f"Unknown assertion '{key}'")
 
 
+def execute_test(test, db_url):
+    start_time = time.time()
+    name = test.get('name')
+    query = test.get('query')
+    assertions = test.get('assertions', {})
+    result_status = 'PASS'
+    error_message = ''
+
+    try:
+        engine = database.create_db_engine(db_url)
+        result = database.execute_query(engine, query)
+        rows = result.all()
+
+        run_assertions(rows, assertions)
+
+    except AssertionError as e:
+        result_status = 'FAIL'
+        error_message = str(e)
+
+    except Exception as e:
+        result_status = 'ERROR'
+        error_message = str(e)
+
+    duration = time.time() - start_time
+
+    return {
+        'name': name,
+        'status': result_status,
+        'duration': duration,
+        'error_message': error_message,
+        'assertions': assertions
+    }
+
+
 def main():
     """Main function to execute the tests and log the results."""
 
     cfg = config.settings
 
     test_files = loader.load_test_files(cfg['TEST_FILES'])
-    engine = database.create_db_engine(cfg['DB_URI'])
+    engine = database.create_db_engine(cfg['DB_URL'])
     logger.setup_logging(cfg)
 
     summary = {
@@ -55,46 +90,31 @@ def main():
         'details': []
     }
 
-    for test in test_files:
-        start_time = time.time()
-        name = test.get('name')
-        query = test.get('query')
-        assertions = test.get('assertions', {})
-        result_status = 'PASS'
-        error_message = ''
+    start_time = time.time()
 
-        try:
-            result = database.execute_query(engine, query)
-            rows = result.all()
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [executor.submit(execute_test, test, cfg['DB_URL'])
+                   for test in test_files]
 
-            run_assertions(rows, assertions)
+        for future in as_completed(futures):
+            result = future.result()
+            summary['total'] += 1
+            if result['status'] == 'PASS':
+                summary['passed'] += 1
+            elif result['status'] == 'FAIL':
+                summary['failed'] += 1
+            else:
+                summary['errors'] += 1
 
-        except AssertionError as e:
-            result_status = 'FAIL'
-            error_message = str(e)
+            summary['details'].append(result)
+            logger.log_test_result(
+                result['name'],
+                result['status'],
+                result['duration'],
+                result['error_message'])
 
-        except Exception as e:
-            result_status = 'ERROR'
-            error_message = str(e)
-
-        duration = time.time() - start_time
-        logger.log_test_result(name, result_status, duration, error_message)
-
-        summary['total'] += 1
-        if result_status == 'PASS':
-            summary['passed'] += 1
-        elif result_status == 'FAIL':
-            summary['failed'] += 1
-        else:
-            summary['errors'] += 1
-
-        summary['details'].append({
-            'name': name,
-            'status': result_status,
-            'duration': duration,
-            'error_message': error_message,
-            'assertions': assertions
-        })
+    end_time = time.time()
+    summary['runtime'] = end_time - start_time
 
     engine.dispose()
     logger.log_summary(summary)
