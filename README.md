@@ -9,6 +9,7 @@ Tests for SQL query result sets are defined in YAML files. You can write multipl
 The format is as follows:
 
 ```yaml filename="test-select-users.yaml"
+name: "Test user selection"
 query: | # The query to be executed. Assertions are run on the result set.
   SELECT id, username, email, created_at, deleted_at
   FROM users
