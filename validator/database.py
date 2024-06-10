@@ -2,7 +2,7 @@ import sqlalchemy
 
 
 def create_db_engine(uri):
-    return sqlalchemy.create_engine(uri)
+    return sqlalchemy.create_engine(uri, client_encoding='uft8')
 
 
 def execute_query(connection, query, params=None):
