@@ -14,7 +14,7 @@ def load_test_files(path):
     test_objects = []
 
     for test_file in test_files:
-        with open(os.path.join(path, test_file), 'r') as file:
+        with open(os.path.join(path, test_file), 'r', encoding='utf-8') as file:
 
             test = yaml.safe_load(file)
             if not validator.validate(test):
