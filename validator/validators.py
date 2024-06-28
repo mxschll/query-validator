@@ -32,8 +32,8 @@ def has(result, rules):
     for row in result:
         for rule in rules:
             col_val = getattr(row, rule['column'], None)
-            if col_val in rule['values']:
-                rule['values'].discard(col_val)
+            if str(col_val) in rule['values']:
+                rule['values'].discard(str(col_val))
 
     remaining_rules = [rule for rule in rules if rule['values']]
 
@@ -58,7 +58,7 @@ def missing(result, rules):
     for row in result:
         for rule in rules:
             col_val = getattr(row, rule['column'], None)
-            assert col_val not in rule['values'], (
+            assert str(col_val) not in rule['values'], (
                 f"Unexpected value {col_val} found in column {rule['column']}"
             )
 
