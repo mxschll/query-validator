@@ -27,7 +27,7 @@ schema = {
                         'values': {
                             'type': 'list',
                             'schema': {
-                                'type': 'string'
+                                'type': ['string', 'number']
                             },
                             'required': True
                         }
@@ -45,7 +45,9 @@ schema = {
                         },
                         'values': {
                             'type': 'list',
-                            'schema': {'type': 'string'},
+                            'schema': {
+                                'type': ['string', 'number']
+                            },
                             'required': True
                         },
                         'regex': {
