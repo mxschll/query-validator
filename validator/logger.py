@@ -1,5 +1,37 @@
 import logging
 import logging_loki
+import json
+
+
+class JsonFormatter(logging.Formatter):
+    def format(self, record):
+        log_record = self.create_log_record(record)
+
+        if record.exc_info:
+            log_record['exc_info'] = self.formatException(record.exc_info)
+
+        extra_fields = self.get_extra_fields(record)
+        log_record.update(extra_fields)
+
+        return json.dumps(log_record)
+
+    def create_log_record(self, record):
+        return {
+            'timestamp': self.formatTime(record, self.datefmt),
+            'level': record.levelname,
+            'message': record.getMessage(),
+        }
+
+    def get_extra_fields(self, record):
+        standard_fields = {
+            'name', 'msg', 'args', 'levelname', 'levelno', 'pathname',
+            'filename', 'module', 'exc_info', 'exc_text', 'stack_info',
+            'lineno', 'funcName', 'created', 'msecs', 'relativeCreated',
+            'thread', 'threadName', 'processName', 'process', 'asctime'
+        }
+
+        return {key: value for key, value in record.__dict__.items()
+                if key not in standard_fields}
 
 
 def setup_logging(config):
@@ -7,6 +39,8 @@ def setup_logging(config):
     logger.setLevel(getattr(logging, config['LOG_LEVEL']))
 
     handlers = []
+
+    json_formatter = JsonFormatter()
 
     # Console handler
     if config['LOG_TO_CONSOLE']:
@@ -35,31 +69,36 @@ def setup_logging(config):
             auth=(config['LOKI_USERNAME'], config['LOKI_PASSWORD']),
             version="1",
         )
+
         loki_handler.setLevel(getattr(logging, config['LOG_LEVEL']))
+        loki_handler.setFormatter(json_formatter)
         handlers.append(loki_handler)
 
     logging.basicConfig(handlers=handlers, level=getattr(
         logging, config['LOG_LEVEL']))
 
 
-def log_test_result(test_name, result, duration, error=None):
+def log_test_result(test_name, test_result, duration, query, rows, error_msg):
     """Log the result of a test case."""
-    if result == 'PASS':
-        logging.info(f"Test: {test_name}, "
-                     f"Result: {result}, "
-                     f"Duration: {duration: .2f} seconds")
+
+    message = (f"Test: {test_name}, "
+               f"Result: {test_result}, "
+               f"Duration: {duration:.2f} seconds")
+
+    if test_result == 'PASS':
+        logging.info(message)
     else:
-        logging.error(f"Test: {test_name}, "
-                      f"Result: {result}, "
-                      f"Duration: {duration:.2f} seconds, "
-                      f"Error: {error}")
+        message = message + ', ' + error_msg
+        logging.error(message, extra={'data': rows, 'query': query})
 
 
 def log_summary(summary):
     """Log a summary of all test results."""
-    logging.info(f"SUMMARY - "
-                 f"Tests: {summary['total']}, "
-                 f"Runtime: {summary['runtime']: .2f}s, "
-                 f"Passed: {summary['passed']}, "
-                 f"Failed: {summary['failed']}, "
-                 f"Errors: {summary['errors']}")
+
+    message = (f"SUMMARY - "
+               f"Tests: {summary['total']}, "
+               f"Passed: {summary['passed']}, "
+               f"Failed: {summary['failed']}, "
+               f"Errors: {summary['errors']}")
+
+    logging.info(message)

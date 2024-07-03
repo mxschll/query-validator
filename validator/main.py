@@ -46,6 +46,7 @@ def execute_test(test, db_url):
     assertions = test.get('assertions', {})
     result_status = 'PASS'
     error_message = ''
+    rows = []
 
     try:
         engine = database.create_db_engine(db_url)
@@ -69,7 +70,9 @@ def execute_test(test, db_url):
         'status': result_status,
         'duration': duration,
         'error_message': error_message,
-        'assertions': assertions
+        'assertions': assertions,
+        'query': query,
+        'data': [tuple(row) for row in rows]
     }
 
 
@@ -111,6 +114,8 @@ def main():
                 result['name'],
                 result['status'],
                 result['duration'],
+                result['query'],
+                result['data'],
                 result['error_message'])
 
     end_time = time.time()

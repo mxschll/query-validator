@@ -2,7 +2,10 @@ import sqlalchemy
 
 
 def create_db_engine(uri):
-    return sqlalchemy.create_engine(uri, client_encoding='utf8')
+    if 'psql' in uri:
+        return sqlalchemy.create_engine(uri, client_encoding='utf8')
+
+    return sqlalchemy.create_engine(uri)
 
 
 def execute_query(connection, query, params=None):

@@ -59,7 +59,7 @@ def missing(result, rules):
         for rule in rules:
             col_val = getattr(row, rule['column'], None)
             assert col_val not in rule['values'], (
-                f"Unexpected value {col_val} found in column {rule['column']}"
+                f"Unexpected value '{col_val}' found in column '{rule['column']}'"
             )
 
 
