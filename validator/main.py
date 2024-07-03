@@ -4,6 +4,7 @@ import logger
 import loader
 import database
 import validators
+from validators import TestResult
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
@@ -15,11 +16,9 @@ def run_assertions(rows, assertions):
         rows (list): List of rows returned from the SQL query.
         assertions (dict): Dictionary of assertions to apply to the result set.
 
-    Raises:
-        AssertionError: If any of the assertions fail.
-        ValueError: If an unknown assertion is encountered.
+    Returns:
+        list: List of TestResult objects for failed assertions.
     """
-
     assertion_map = {
         'count': validators.row_count,
         'has': validators.has,
@@ -28,15 +27,18 @@ def run_assertions(rows, assertions):
         'only_nulls': validators.only_nulls
     }
 
+    failed_assertions = []
+
     for key, assertion in assertions.items():
         if key in assertion_map:
-            try:
-                assertion_map[key](rows, assertion)
-            except AssertionError as e:
-                raise AssertionError(
-                    f"Assertion '{key}' failed: {str(e)}") from e
+            result = assertion_map[key](rows, assertion)
+            if not result.success:
+                failed_assertions.append((key, result))
         else:
-            raise ValueError(f"Unknown assertion '{key}'")
+            failed_assertions.append(
+                (key, TestResult(False, f"Unknown assertion '{key}'")))
+
+    return failed_assertions
 
 
 def execute_test(test, db_url):
@@ -45,7 +47,8 @@ def execute_test(test, db_url):
     query = test.get('query')
     assertions = test.get('assertions', {})
     result_status = 'PASS'
-    error_message = ''
+    error_messages = []
+    erroneous_rows = []
     rows = []
 
     try:
@@ -53,15 +56,19 @@ def execute_test(test, db_url):
         result = database.execute_query(engine, query)
         rows = result.all()
 
-        run_assertions(rows, assertions)
+        failed_assertions = run_assertions(rows, assertions)
 
-    except AssertionError as e:
-        result_status = 'FAIL'
-        error_message = str(e)
+        if failed_assertions:
+            result_status = 'FAIL'
+            for key, test_result in failed_assertions:
+                error_messages.append(f"Assertion '{key}' failed: {
+                                      test_result.message}")
+                if test_result.erroneous_rows:
+                    erroneous_rows.extend(test_result.erroneous_rows)
 
     except Exception as e:
         result_status = 'ERROR'
-        error_message = str(e)
+        error_messages.append(str(e))
 
     duration = time.time() - start_time
 
@@ -69,7 +76,8 @@ def execute_test(test, db_url):
         'name': name,
         'status': result_status,
         'duration': duration,
-        'error_message': error_message,
+        'error_messages': error_messages,
+        'erroneous_rows': erroneous_rows,
         'assertions': assertions,
         'query': query,
         'data': [tuple(row) for row in rows]
@@ -115,8 +123,8 @@ def main():
                 result['status'],
                 result['duration'],
                 result['query'],
-                result['data'],
-                result['error_message'])
+                result['error_messages'],
+                result['erroneous_rows'])
 
     end_time = time.time()
     summary['runtime'] = end_time - start_time
@@ -127,3 +135,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

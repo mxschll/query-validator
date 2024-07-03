@@ -27,7 +27,8 @@ class JsonFormatter(logging.Formatter):
             'name', 'msg', 'args', 'levelname', 'levelno', 'pathname',
             'filename', 'module', 'exc_info', 'exc_text', 'stack_info',
             'lineno', 'funcName', 'created', 'msecs', 'relativeCreated',
-            'thread', 'threadName', 'processName', 'process', 'asctime'
+            'thread', 'threadName', 'processName', 'process', 'asctime',
+            'taskName'
         }
 
         return {key: value for key, value in record.__dict__.items()
@@ -78,7 +79,7 @@ def setup_logging(config):
         logging, config['LOG_LEVEL']))
 
 
-def log_test_result(test_name, test_result, duration, query, rows, error_msg):
+def log_test_result(test_name, test_result, duration, query, error_msg, err):
     """Log the result of a test case."""
 
     message = (f"Test: {test_name}, "
@@ -88,8 +89,10 @@ def log_test_result(test_name, test_result, duration, query, rows, error_msg):
     if test_result == 'PASS':
         logging.info(message)
     else:
-        message = message + ', ' + error_msg
-        logging.error(message, extra={'data': rows, 'query': query})
+        logging.error(message, extra={
+            'assertions': error_msg,
+            'errornous_rows': [dict(row._mapping) for row in err],
+            'query': query})
 
 
 def log_summary(summary):
