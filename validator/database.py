@@ -2,7 +2,7 @@ import sqlalchemy
 
 
 def create_db_engine(uri):
-    if 'psql' in uri:
+    if uri.startswith('postgres'):
         return sqlalchemy.create_engine(uri, client_encoding='utf8')
 
     return sqlalchemy.create_engine(uri)
