@@ -20,6 +20,7 @@ def row_count(result, expected_value):
     Returns:
         TestResult: Object containing test result.
     """
+
     count = len(result)
     if count != expected_value:
         return TestResult(
@@ -27,6 +28,7 @@ def row_count(result, expected_value):
             message=f"Expected {expected_value}, got {count}",
             erroneous_rows=result
         )
+
     return TestResult(success=True, message="Row count matches expected value")
 
 
@@ -41,6 +43,7 @@ def has(result, rules):
     Returns:
         TestResult: Object containing test result.
     """
+
     remaining_rules = []
     erroneous_rows = []
 
@@ -63,6 +66,7 @@ def has(result, rules):
             message=f"Expected values not found: {remaining_rules}",
             erroneous_rows=erroneous_rows
         )
+
     return TestResult(success=True, message="All expected values found")
 
 
@@ -77,6 +81,7 @@ def missing(result, rules):
     Returns:
         TestResult: Object containing test result.
     """
+
     erroneous_rows = []
 
     for rule in rules:
@@ -94,6 +99,7 @@ def missing(result, rules):
             message="Unexpected values found",
             erroneous_rows=erroneous_rows
         )
+
     return TestResult(success=True, message="No unexpected values found")
 
 
@@ -108,6 +114,7 @@ def no_nulls(result, columns):
     Returns:
         TestResult: Object containing test result.
     """
+
     erroneous_rows = []
 
     for row in result:
@@ -123,6 +130,7 @@ def no_nulls(result, columns):
             message="Unexpected 'null' values found",
             erroneous_rows=erroneous_rows
         )
+
     return TestResult(success=True, message="No null values found in specified columns")
 
 
@@ -137,6 +145,7 @@ def only_nulls(result, columns):
     Returns:
         TestResult: Object containing test result.
     """
+
     erroneous_rows = []
 
     for row in result:
@@ -152,4 +161,5 @@ def only_nulls(result, columns):
             message="Unexpected non-null values found",
             erroneous_rows=erroneous_rows
         )
+
     return TestResult(success=True, message="Only null values found in specified columns")

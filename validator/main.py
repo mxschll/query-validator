@@ -19,6 +19,7 @@ def run_assertions(rows, assertions):
     Returns:
         list: List of TestResult objects for failed assertions.
     """
+
     assertion_map = {
         'count': validators.row_count,
         'has': validators.has,
@@ -61,8 +62,8 @@ def execute_test(test, db_url):
         if failed_assertions:
             result_status = 'FAIL'
             for key, test_result in failed_assertions:
-                error_messages.append(f"Assertion '{key}' failed: {
-                                      test_result.message}")
+                error_messages.append(
+                    f"Assertion '{key}' failed: {test_result.message}")
                 if test_result.erroneous_rows:
                     erroneous_rows.extend(test_result.erroneous_rows)
 
@@ -135,4 +136,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
